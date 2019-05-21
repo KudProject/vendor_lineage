@@ -18,24 +18,32 @@
 #
 # These config vars are usually set in BoardConfig.mk:
 #
-#   TARGET_KERNEL_SOURCE               = Kernel source dir, optional, defaults
-#                                          to kernel/$(TARGET_DEVICE_DIR)
-#   TARGET_KERNEL_ADDITIONAL_FLAGS     = Additional make flags, optional
-#   TARGET_KERNEL_ARCH                 = Kernel Arch
-#   TARGET_KERNEL_CROSS_COMPILE_PREFIX = Compiler prefix (e.g. arm-eabi-)
-#                                          defaults to arm-linux-androidkernel- for arm
-#                                                      aarch64-linux-androidkernel- for arm64
-#                                                      x86_64-linux-androidkernel- for x86
+#   TARGET_KERNEL_SOURCE                     = Kernel source dir, optional, defaults
+#                                              to kernel/$(TARGET_DEVICE_DIR)
+#   TARGET_KERNEL_ADDITIONAL_FLAGS           = Additional make flags, optional
+#   TARGET_KERNEL_ARCH                       = Kernel Arch
+#   TARGET_KERNEL_CROSS_COMPILE_PREFIX       = Compiler prefix (e.g. arm-eabi-)
+#                                              defaults to arm-linux-androidkernel- for arm
+#                                                          aarch64-linux-androidkernel- for arm64
+#                                                          x86_64-linux-androidkernel- for x86
+#   TARGET_KERNEL_CROSS_COMPILE_ARM32_PREFIX = Compiler prefix (e.g. arm-eabi-) (ARM64 only)
+#                                              defaults to arm-linux-androideabi-
 #
-#   TARGET_KERNEL_CLANG_COMPILE        = Compile kernel with clang, defaults to false
+#   TARGET_KERNEL_CLANG_COMPILE              = Compile kernel with clang, defaults to false
 #
-#   KERNEL_TOOLCHAIN_PREFIX            = Overrides TARGET_KERNEL_CROSS_COMPILE_PREFIX,
-#                                          Set this var in shell to override
-#                                          toolchain specified in BoardConfig.mk
-#   KERNEL_TOOLCHAIN                   = Path to toolchain, if unset, assumes
-#                                          TARGET_KERNEL_CROSS_COMPILE_PREFIX
-#                                          is in PATH
-#   USE_CCACHE                         = Enable ccache (global Android flag)
+#   KERNEL_TOOLCHAIN_PREFIX                  = Overrides TARGET_KERNEL_CROSS_COMPILE_PREFIX,
+#                                              Set this var in shell to override
+#                                              toolchain specified in BoardConfig.mk
+#   KERNEL_TOOLCHAIN                         = Path to toolchain, if unset, assumes
+#                                              TARGET_KERNEL_CROSS_COMPILE_PREFIX
+#                                              is in PATH
+#   KERNEL_TOOLCHAIN_ARM32_PREFIX            = Overrides TARGET_KERNEL_CROSS_COMPILE_PREFIX,
+#                                              Set this var in shell to override
+#                                              toolchain specified in BoardConfig.mk (ARM64 only)
+#   KERNEL_TOOLCHAIN_ARM32                   = Path to toolchain, if unset, assumes
+#                                              TARGET_KERNEL_CROSS_COMPILE_PREFIX
+#                                              is in PATH (ARM64 only)
+#   USE_CCACHE                               = Enable ccache (global Android flag)
 
 BUILD_TOP := $(shell pwd)
 
@@ -76,6 +84,27 @@ else ifneq ($(KERNEL_TOOLCHAIN_PREFIX),)
 KERNEL_TOOLCHAIN_PATH := $(KERNEL_TOOLCHAIN)/$(KERNEL_TOOLCHAIN_PREFIX)
 endif
 
+ifeq ($(KERNEL_ARCH),arm64)
+TARGET_KERNEL_CROSS_COMPILE_ARM32_PREFIX := $(strip $(TARGET_KERNEL_CROSS_COMPILE_ARM32_PREFIX))
+ifneq ($(TARGET_KERNEL_CROSS_COMPILE_ARM32_PREFIX),)
+KERNEL_TOOLCHAIN_ARM32_PREFIX ?= $(TARGET_KERNEL_CROSS_COMPILE_ARM32_PREFIX)
+else
+ifeq ($(TARGET_KERNEL_CLANG_COMPILE),true)
+    KERNEL_TOOLCHAIN_ARM32_PREFIX ?= arm-linux-androideabi-
+else
+    KERNEL_TOOLCHAIN_ARM32_PREFIX ?= arm-linux-androidkernel-
+endif
+endif
+
+ifeq ($(KERNEL_TOOLCHAIN_ARM32),)
+KERNEL_TOOLCHAIN_ARM32_PATH := $(KERNEL_TOOLCHAIN_ARM32_PREFIX)
+else
+ifneq ($(KERNEL_TOOLCHAIN_ARM32_PREFIX),)
+KERNEL_TOOLCHAIN_ARM32_PATH := $(KERNEL_TOOLCHAIN_ARM32)/$(KERNEL_TOOLCHAIN_ARM32_PREFIX)
+endif
+endif
+endif
+
 ifneq ($(USE_CCACHE),)
     # Detect if the system already has ccache installed to use instead of the prebuilt
     CCACHE_BIN := $(shell which ccache)
@@ -95,7 +124,7 @@ endif
 
 # Needed for CONFIG_COMPAT_VDSO, safe to set for all arm64 builds
 ifeq ($(KERNEL_ARCH),arm64)
-   KERNEL_CROSS_COMPILE += CROSS_COMPILE_ARM32="arm-linux-androideabi-"
+    KERNEL_CROSS_COMPILE += CROSS_COMPILE_ARM32="$(KERNEL_TOOLCHAIN_ARM32_PATH)"
 endif
 
 # Clear this first to prevent accidental poisoning from env
