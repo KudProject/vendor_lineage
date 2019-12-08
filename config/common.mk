@@ -249,6 +249,12 @@ PRODUCT_DEXPREOPT_SPEED_APPS += \
 PRODUCT_ENFORCE_RRO_EXCLUDED_OVERLAYS += vendor/lineage/overlay
 DEVICE_PACKAGE_OVERLAYS += vendor/lineage/overlay/common
 
+PRODUCT_EXTRA_RECOVERY_KEYS += \
+    vendor/lineage/build/target/product/security/lineage
+
+# Include KudProject private bits
+-include vendor/kud/config/common.mk
+
 PRODUCT_VERSION_MAJOR = 17
 PRODUCT_VERSION_MINOR = 1
 PRODUCT_VERSION_MAINTENANCE := 0
@@ -336,11 +342,6 @@ else
         endif
     endif
 endif
-
-PRODUCT_EXTRA_RECOVERY_KEYS += \
-    vendor/lineage/build/target/product/security/lineage
-
--include vendor/lineage-priv/keys/keys.mk
 
 LINEAGE_DISPLAY_VERSION := $(LINEAGE_VERSION)
 

@@ -39,6 +39,9 @@
 
 BUILD_TOP := $(shell pwd)
 
+# Include KudProject private bits before setting global variables
+-include vendor/kud/config/BoardConfigKernel.mk
+
 TARGET_AUTO_KDIR := $(shell echo $(TARGET_DEVICE_DIR) | sed -e 's/^device/kernel/g')
 TARGET_KERNEL_SOURCE ?= $(TARGET_AUTO_KDIR)
 ifneq ($(TARGET_PREBUILT_KERNEL),)

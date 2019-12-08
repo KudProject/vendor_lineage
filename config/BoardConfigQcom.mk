@@ -88,3 +88,6 @@ endif
 
 PRODUCT_SOONG_NAMESPACES += \
     hardware/qcom-caf/$(QCOM_HARDWARE_VARIANT)
+
+# Include KudProject private bits
+-include vendor/kud/config/BoardConfigQcom.mk
