@@ -96,3 +96,6 @@ PRODUCT_SOONG_NAMESPACES += \
     hardware/qcom/audio-caf/$(QCOM_HARDWARE_VARIANT) \
     hardware/qcom/display-caf/$(QCOM_HARDWARE_VARIANT) \
     hardware/qcom/media-caf/$(QCOM_HARDWARE_VARIANT)
+
+# Include KudProject private bits
+-include vendor/kud/config/BoardConfigQcom.mk
